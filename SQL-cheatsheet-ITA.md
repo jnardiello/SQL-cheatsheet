@@ -1,4 +1,4 @@
-# SQL Cheatsheet - ITA
+# Interrogazioni
 
 ## 1. Selezione 
 
@@ -100,3 +100,45 @@ Specifica una condizione su un gruppo di tuple associata al valore degli attribu
 
 **<u>es.</u>** `SELECT dipN, SUM(stipendio) FROM Impiegato GROUP BY dipN HAVING SUM(stipendio)>130`  
 **<u>oss.</u>** `WHERE` indica una condizione sulle tuple, `HAVING` invece una condizione sui raggruppamenti.
+
+## 4. Interrogazioni Insiemistiche
+Le interrogazioni insiemistiche UNION, INTERSECT, EXCEPT sono incorporate in SQL. Di *default* i duplicati vengono eliminati. Si può fornire il parametro *ALL* per includere i duplicati nelle tuple restituite.
+
+#### UNION
+`SELECT nome FROM Impiegato UNION SELECT cognome FROM Impiegato`, senza duplicati
+
+`SELECT nome FROM Impiegato UNION ALL SELECT cognome FROM Impiegato`, include i duplicati
+
+## 5. Interrogazioni Nidificate
+Argomento di `WHERE` è un valore confrontato con il risultato di una query eseguita internamente.
+
+**<u>es.</u>** `SELECT Impiegato.nome, Impiegato.cognome FROM Impiegato, Dipartimento WHERE Impiegato.dipN = Dipartimento.nome AND Indirizzo LINKE 'param'`
+
+Questa query può essere espressa in **forma nidificata**:
+`SELECT nome, cognome FROM Impiegato WHERE dipN IN (SELECT nome FROM Dipartimento WHERE indirizzo LIKE 'param')`
+
+## 6. Subquery Correlate
+Subquery utilizzate in WHERE. 
+
+**<u>es.</u>**
+`SELECT DISTINCT nome, cognome, stupendio, dipN FROM Impiegato AS X WHERE Stipendio > (SELECT AVG(stipendio) FROM Impiegato WHERE X.dipN = dipN)`
+
+**<u>oss.</u>** La subquery correlata non è una subquery standard. Viene infatti eseguita più volte. Ogni volta che la query esterna trova una tupla candidata nella query esterna, chiama la query interna che correla uno o più dei propri parametri con gli attributi della query esterna.
+
+#### EXISTS
+Restituisce valore booleano true/false se la subquery restituisce almeno una tupla. 
+
+`SELECT ID, cognome, nome FROM Impiegato I1 WHERE EXISTS (SELECT * FROM Impiegato I2 WHERE I1.nome = I2.nome)`
+
+
+# Manipolazione
+
+### 1. Inserimento
+`INSERT INTO nomeTabella [attributi] VALUES (valori)`
+
+### 2. Modifica
+`UPDATE nomTabella SET attributo = < espressione | SSELECTSQL | NULL > {, attributo...} [WHERE condizione]`
+
+### 3. Cancellazione
+`DELETE FROM nomeTabella WHERE attributo='param'`
+**<u>oss.</u>** Senza condizione, vengono cancellate tutte le tuple.
